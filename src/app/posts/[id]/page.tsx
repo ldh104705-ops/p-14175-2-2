@@ -33,6 +33,13 @@ export default function Page() {
       method: "DELETE",
     }).then((data) => {
       alert(data.msg);
+
+      if (postComments == null) return;
+
+      // 삭제된 댓글만 빼고 새 배열을 만들어 state 교체 → 화면에서도 바로 사라짐
+      setPostComments(
+        postComments.filter((comment) => comment.id != commentId),
+      );
     });
   };
 
