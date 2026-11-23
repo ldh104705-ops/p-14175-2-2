@@ -28,6 +28,14 @@ export default function Page() {
     });
   };
 
+  const deleteComment = (id: number, commentId: number) => {
+    apiFetch(`/api/v1/posts/${id}/comments/${commentId}`, {
+      method: "DELETE",
+    }).then((data) => {
+      alert(data.msg);
+    });
+  };
+
   if (post == null) return <div>로딩중...</div>;
 
   return (
@@ -61,8 +69,19 @@ export default function Page() {
       {postComments != null && postComments.length > 0 && (
         <ul>
           {postComments.map((comment) => (
-            <li key={comment.id}>
-              {comment.id} : {comment.content}
+            <li key={comment.id} className="flex gap-2 items-start">
+              <span>
+                {comment.id} : {comment.content}
+              </span>
+              <button
+                className="px-1 rounded border"
+                onClick={() =>
+                  confirm(`${comment.id}번 댓글을 정말로 삭제하시겠습니까?`) &&
+                  deleteComment(post.id, comment.id)
+                }
+              >
+                삭제
+              </button>
             </li>
           ))}
         </ul>
