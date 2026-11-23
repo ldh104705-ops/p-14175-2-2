@@ -2,6 +2,7 @@
 
 import { apiFetch } from "@/lib/backend/client";
 import type { PostDto } from "@/types/post";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Page() {
@@ -23,7 +24,9 @@ export default function Page() {
         <ul>
           {posts.map((post) => (
             <li key={post.id}>
-              {post.id} : {post.title}
+              <Link href={`/posts/${post.id}`}>
+                {post.id} : {post.title}
+              </Link>
             </li>
           ))}
         </ul>
