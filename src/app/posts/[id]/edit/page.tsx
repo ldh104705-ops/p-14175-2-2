@@ -1,0 +1,85 @@
+"use client";
+
+import { apiFetch } from "@/lib/backend/client";
+import type { PostDto } from "@/types/post";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+export default function Page() {
+  const { id } = useParams<{ id: string }>();
+  const [post, setPost] = useState<PostDto | null>(null);
+
+  useEffect(() => {
+    apiFetch(`/api/v1/posts/${id}`).then(setPost);
+  }, [id]);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const form = e.target as HTMLFormElement;
+
+    const titleInput = form.elements.namedItem("title") as HTMLInputElement;
+    const contentTextarea = form.elements.namedItem(
+      "content",
+    ) as HTMLTextAreaElement;
+
+    titleInput.value = titleInput.value.trim();
+
+    if (titleInput.value.length == 0) {
+      alert("제목을 입력해주세요.");
+      titleInput.focus();
+      return;
+    }
+
+    if (titleInput.value.length < 2) {
+      alert("제목을 2자 이상 입력해주세요.");
+      titleInput.focus();
+      return;
+    }
+
+    contentTextarea.value = contentTextarea.value.trim();
+
+    if (contentTextarea.value.length == 0) {
+      alert("내용을 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+
+    if (contentTextarea.value.length < 2) {
+      alert("내용을 2자 이상 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+  };
+
+  if (post == null) return <div>로딩중...</div>;
+
+  return (
+    <>
+      <h1>{post.id}번 글 수정</h1>
+
+      <form className="flex flex-col gap-2 p-2" onSubmit={handleSubmit}>
+        <input
+          className="border p-2 rounded"
+          type="text"
+          name="title"
+          placeholder="제목"
+          autoFocus
+          maxLength={100}
+          defaultValue={post.title}
+        />
+        <textarea
+          className="border p-2 rounded"
+          name="content"
+          placeholder="내용"
+          maxLength={5000}
+          rows={10}
+          defaultValue={post.content}
+        />
+        <button className="border p-2 rounded" type="submit">
+          저장
+        </button>
+      </form>
+    </>
+  );
+}
