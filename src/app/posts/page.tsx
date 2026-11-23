@@ -1,9 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 export default function Page() {
-  const posts = [
-    { id: 1, title: "제목 1" },
-    { id: 2, title: "제목 2" },
-    { id: 3, title: "제목 3" },
-  ];
+  const [posts, setPosts] = useState<{ id: number; title: string }[]>([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/v1/posts")
+      .then((res) => res.json())
+      .then(setPosts);
+  }, []);
 
   return (
     <>
