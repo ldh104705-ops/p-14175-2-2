@@ -49,6 +49,11 @@ export default function Page() {
       body: JSON.stringify({ content }),
     }).then((data) => {
       alert(data.msg);
+
+      if (postComments == null) return;
+
+      // 응답으로 받은 새 댓글(data.data)을 맨 앞에 붙인 새 배열로 교체
+      setPostComments([data.data, ...postComments]);
     });
   };
 
@@ -77,6 +82,7 @@ export default function Page() {
     }
 
     writeComment(post!.id, contentTextarea.value);
+    contentTextarea.value = "";
   };
 
   if (post == null) return <div>로딩중...</div>;
