@@ -16,6 +16,10 @@ export default function Page() {
     <>
       <h1>글 목록</h1>
 
+      <div>
+        <Link href="/posts/write">글 쓰기</Link>
+      </div>
+
       {posts == null && <div>로딩중...</div>}
 
       {posts != null && posts.length == 0 && <div>글이 없습니다.</div>}
