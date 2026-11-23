@@ -24,14 +24,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">
+      <body className="min-h-full flex flex-col">
         <header>
           <nav className="flex gap-4 p-2 border-b">
             <Link href="/">홈</Link>
             <Link href="/posts">글 목록</Link>
           </nav>
         </header>
-        <main>{children}</main>
+        <main className="flex-1 flex flex-col">{children}</main>
         <footer className="p-2 border-t text-center">푸터</footer>
       </body>
     </html>
