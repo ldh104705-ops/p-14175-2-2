@@ -2,10 +2,11 @@
 
 import { apiFetch } from "@/lib/backend/client";
 import type { PostDto } from "@/types/post";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Page() {
+  const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<PostDto | null>(null);
 
@@ -50,6 +51,17 @@ export default function Page() {
       contentTextarea.focus();
       return;
     }
+
+    apiFetch(`/api/v1/posts/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        title: titleInput.value,
+        content: contentTextarea.value,
+      }),
+    }).then((data) => {
+      alert(data.msg);
+      router.replace(`/posts/${id}`);
+    });
   };
 
   if (post == null) return <div>로딩중...</div>;
