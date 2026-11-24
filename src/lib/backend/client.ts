@@ -10,6 +10,12 @@ export const apiFetch = (url: string, options?: RequestInit) => {
   }
 
   return fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`, options).then(
-    (res) => res.json(),
+    (res) => {
+      // res.ok: 응답코드가 200~299 이면 true
+      // 4xx, 5xx 이면 직접 예외를 던짐 → 아래 then은 모두 건너뛰고 바로 catch로 이동
+      if (!res.ok) throw new Error(`HTTP 에러 : ${res.status}`);
+
+      return res.json();
+    },
   );
 };
