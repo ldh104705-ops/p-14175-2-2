@@ -135,18 +135,8 @@ function PostCommentWriteAndList({
   );
 }
 
-export default function Page() {
+function PostInfo({ post }: { post: PostDto }) {
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<PostDto | null>(null);
-  const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
-    null,
-  );
-
-  useEffect(() => {
-    apiFetch(`/api/v1/posts/${id}`).then(setPost);
-    apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
-  }, [id]);
 
   const deletePost = (id: number) => {
     apiFetch(`/api/v1/posts/${id}`, {
@@ -157,12 +147,8 @@ export default function Page() {
     });
   };
 
-  if (post == null) return <div>로딩중...</div>;
-
   return (
     <>
-      <h1>글 상세페이지</h1>
-
       <div>번호 : {post.id}</div>
       <div>제목 : {post.title}</div>
       <div style={{ whiteSpace: "pre-line" }}>{post.content}</div>
@@ -178,6 +164,29 @@ export default function Page() {
           수정
         </Link>
       </div>
+    </>
+  );
+}
+
+export default function Page() {
+  const { id } = useParams<{ id: string }>();
+  const [post, setPost] = useState<PostDto | null>(null);
+  const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
+    null,
+  );
+
+  useEffect(() => {
+    apiFetch(`/api/v1/posts/${id}`).then(setPost);
+    apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
+  }, [id]);
+
+  if (post == null) return <div>로딩중...</div>;
+
+  return (
+    <>
+      <h1>글 상세페이지</h1>
+
+      <PostInfo post={post} />
 
       <PostCommentWriteAndList
         id={post.id}
