@@ -14,7 +14,15 @@ function PostCommentWriteAndList({
   // ReturnType<typeof 함수> : 그 함수가 리턴하는 값의 타입을 자동으로 뽑아냄
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
-  const { postComments, deleteComment, writeComment } = postCommentsState;
+  const { postComments, writeComment } = postCommentsState;
+
+  // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
+  // → JSX 안에 있던 긴 코드(confirm + 콜백)를 JSX 밖으로 빼냄
+  const deleteComment = (commentId: number) => {
+    if (!confirm(`${commentId}번 댓글을 정말로 삭제하시겠습니까?`)) return;
+
+    postCommentsState.deleteComment(id, commentId, (data) => alert(data.msg));
+  };
 
   const handleCommentWriteFormSubmit = (
     e: React.FormEvent<HTMLFormElement>,
@@ -89,10 +97,7 @@ function PostCommentWriteAndList({
               </span>
               <button
                 className="px-1 rounded border"
-                onClick={() =>
-                  confirm(`${comment.id}번 댓글을 정말로 삭제하시겠습니까?`) &&
-                  deleteComment(id, comment.id, (data) => alert(data.msg))
-                }
+                onClick={() => deleteComment(comment.id)}
               >
                 삭제
               </button>
@@ -110,9 +115,19 @@ function PostInfo({
   postState: ReturnType<typeof usePost>;
 }) {
   const router = useRouter();
-  const { post, deletePost } = postState;
+  const { post } = postState;
 
   if (post == null) return <div>로딩중...</div>;
+
+  // 훅의 deletePost를 이 컴포넌트에 맞게 '재정의' → JSX가 짧아짐
+  const deletePost = () => {
+    if (!confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`)) return;
+
+    postState.deletePost(post.id, (data) => {
+      alert(data.msg);
+      router.replace("/posts");
+    });
+  };
 
   return (
     <>
@@ -121,16 +136,7 @@ function PostInfo({
       <div style={{ whiteSpace: "pre-line" }}>{post.content}</div>
 
       <div className="flex gap-2">
-        <button
-          className="p-2 rounded border"
-          onClick={() =>
-            confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`) &&
-            deletePost(post.id, (data) => {
-              alert(data.msg);
-              router.replace("/posts");
-            })
-          }
-        >
+        <button className="p-2 rounded border" onClick={deletePost}>
           삭제
         </button>
         <Link className="p-2 rounded border" href={`/posts/${post.id}/edit`}>
