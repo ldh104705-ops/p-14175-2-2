@@ -71,6 +71,34 @@ function PostCommentWrite({
   );
 }
 
+// 댓글 한 줄(li)만 담당
+function PostCommentListItem({
+  comment,
+  postCommentsState,
+}: {
+  comment: PostCommentDto;
+  postCommentsState: ReturnType<typeof usePostComments>;
+}) {
+  // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
+  // → 이제 댓글 하나만 다루니까 commentId도 받을 필요 없음
+  const deleteComment = () => {
+    if (!confirm(`${comment.id}번 댓글을 정말로 삭제하시겠습니까?`)) return;
+
+    postCommentsState.deleteComment(comment.id, (data) => alert(data.msg));
+  };
+
+  return (
+    <li className="flex gap-2 items-start">
+      <span>
+        {comment.id} : {comment.content}
+      </span>
+      <button className="px-1 rounded border" onClick={deleteComment}>
+        삭제
+      </button>
+    </li>
+  );
+}
+
 // 댓글 목록만 담당
 function PostCommentList({
   postCommentsState,
@@ -78,14 +106,6 @@ function PostCommentList({
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
   const { postId, postComments } = postCommentsState;
-
-  // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
-  // → JSX 안에 있던 긴 코드(confirm + 콜백)를 JSX 밖으로 빼냄
-  const deleteComment = (commentId: number) => {
-    if (!confirm(`${commentId}번 댓글을 정말로 삭제하시겠습니까?`)) return;
-
-    postCommentsState.deleteComment(commentId, (data) => alert(data.msg));
-  };
 
   return (
     <>
@@ -100,17 +120,12 @@ function PostCommentList({
       {postComments != null && postComments.length > 0 && (
         <ul>
           {postComments.map((comment) => (
-            <li key={comment.id} className="flex gap-2 items-start">
-              <span>
-                {comment.id} : {comment.content}
-              </span>
-              <button
-                className="px-1 rounded border"
-                onClick={() => deleteComment(comment.id)}
-              >
-                삭제
-              </button>
-            </li>
+            // key는 map으로 반복되는 바깥쪽 요소(여기선 컴포넌트)에 붙여야 함
+            <PostCommentListItem
+              key={comment.id}
+              comment={comment}
+              postCommentsState={postCommentsState}
+            />
           ))}
         </ul>
       )}
