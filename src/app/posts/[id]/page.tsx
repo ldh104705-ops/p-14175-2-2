@@ -9,46 +9,22 @@ import { useEffect, useState } from "react";
 function PostCommentWriteAndList({
   id,
   postComments,
-  setPostComments,
+  deleteComment,
+  writeComment,
 }: {
   id: number;
   postComments: PostCommentDto[] | null;
-  setPostComments: (postComments: PostCommentDto[]) => void;
+  deleteComment: (
+    id: number,
+    commentId: number,
+    onSuccess: (data: { msg: string }) => void,
+  ) => void;
+  writeComment: (
+    id: number,
+    content: string,
+    onSuccess: (data: { msg: string }) => void,
+  ) => void;
 }) {
-  const deleteComment = (id: number, commentId: number) => {
-    apiFetch(`/api/v1/posts/${id}/comments/${commentId}`, {
-      method: "DELETE",
-    }).then((data) => {
-      alert(data.msg);
-
-      if (postComments == null) return;
-
-      // 삭제된 댓글만 빼고 새 배열을 만들어 state 교체 → 화면에서도 바로 사라짐
-      setPostComments(
-        postComments.filter((comment) => comment.id != commentId),
-      );
-    });
-  };
-
-  const writeComment = (id: number, content: string) => {
-    apiFetch(`/api/v1/posts/${id}/comments`, {
-      method: "POST",
-      body: JSON.stringify({ content }),
-    })
-      .then((data) => {
-        alert(data.msg);
-
-        if (postComments == null) return;
-
-        // 응답으로 받은 새 댓글(data.data)을 맨 앞에 붙인 새 배열로 교체
-        setPostComments([data.data, ...postComments]);
-      })
-      // apiFetch가 4xx, 5xx 응답이면 rsData를 던짐 → 여기서 받아서 메시지 출력
-      .catch((rsData) => {
-        alert(`${rsData.resultCode} : ${rsData.msg}`);
-      });
-  };
-
   const handleCommentWriteFormSubmit = (
     e: React.FormEvent<HTMLFormElement>,
   ) => {
@@ -79,8 +55,10 @@ function PostCommentWriteAndList({
       return;
     }
 
-    writeComment(id, contentTextarea.value);
-    contentTextarea.value = "";
+    writeComment(id, contentTextarea.value, (data) => {
+      alert(data.msg);
+      contentTextarea.value = "";
+    });
   };
 
   return (
@@ -122,7 +100,7 @@ function PostCommentWriteAndList({
                 className="px-1 rounded border"
                 onClick={() =>
                   confirm(`${comment.id}번 댓글을 정말로 삭제하시겠습니까?`) &&
-                  deleteComment(id, comment.id)
+                  deleteComment(id, comment.id, (data) => alert(data.msg))
                 }
               >
                 삭제
@@ -192,9 +170,8 @@ function usePost(id: string) {
   };
 }
 
-export default function Page() {
-  const { id } = useParams<{ id: string }>();
-  const { post, deletePost } = usePost(id);
+// 댓글 데이터 로직(state + 조회/작성/삭제 API)만 담당하는 커스텀 훅
+function usePostComments(id: string) {
   const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
     null,
   );
@@ -202,6 +179,60 @@ export default function Page() {
   useEffect(() => {
     apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
   }, [id]);
+
+  const deleteComment = (
+    id: number,
+    commentId: number,
+    onSuccess: (data: { msg: string }) => void,
+  ) => {
+    apiFetch(`/api/v1/posts/${id}/comments/${commentId}`, {
+      method: "DELETE",
+    }).then((data) => {
+      if (postComments != null) {
+        // 삭제된 댓글만 빼고 새 배열을 만들어 state 교체 → 화면에서도 바로 사라짐
+        setPostComments(
+          postComments.filter((comment) => comment.id != commentId),
+        );
+      }
+
+      onSuccess(data);
+    });
+  };
+
+  const writeComment = (
+    id: number,
+    content: string,
+    onSuccess: (data: { msg: string }) => void,
+  ) => {
+    apiFetch(`/api/v1/posts/${id}/comments`, {
+      method: "POST",
+      body: JSON.stringify({ content }),
+    })
+      .then((data) => {
+        if (postComments != null) {
+          // 응답으로 받은 새 댓글(data.data)을 맨 앞에 붙인 새 배열로 교체
+          setPostComments([data.data, ...postComments]);
+        }
+
+        onSuccess(data);
+      })
+      // apiFetch가 4xx, 5xx 응답이면 rsData를 던짐 → 여기서 받아서 메시지 출력
+      .catch((rsData) => {
+        alert(`${rsData.resultCode} : ${rsData.msg}`);
+      });
+  };
+
+  return {
+    postComments,
+    deleteComment,
+    writeComment,
+  };
+}
+
+export default function Page() {
+  const { id } = useParams<{ id: string }>();
+  const { post, deletePost } = usePost(id);
+  const { postComments, deleteComment, writeComment } = usePostComments(id);
 
   if (post == null) return <div>로딩중...</div>;
 
@@ -214,7 +245,8 @@ export default function Page() {
       <PostCommentWriteAndList
         id={post.id}
         postComments={postComments}
-        setPostComments={setPostComments}
+        deleteComment={deleteComment}
+        writeComment={writeComment}
       />
     </>
   );
