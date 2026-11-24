@@ -6,24 +6,14 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-function PostCommentWriteAndList({
+// 댓글 작성 폼만 담당
+function PostCommentWrite({
   id,
   postCommentsState,
 }: {
   id: number;
-  // ReturnType<typeof 함수> : 그 함수가 리턴하는 값의 타입을 자동으로 뽑아냄
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
-  const { postComments, writeComment } = postCommentsState;
-
-  // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
-  // → JSX 안에 있던 긴 코드(confirm + 콜백)를 JSX 밖으로 빼냄
-  const deleteComment = (commentId: number) => {
-    if (!confirm(`${commentId}번 댓글을 정말로 삭제하시겠습니까?`)) return;
-
-    postCommentsState.deleteComment(id, commentId, (data) => alert(data.msg));
-  };
-
   const handleCommentWriteFormSubmit = (
     e: React.FormEvent<HTMLFormElement>,
   ) => {
@@ -54,7 +44,7 @@ function PostCommentWriteAndList({
       return;
     }
 
-    writeComment(id, contentTextarea.value, (data) => {
+    postCommentsState.writeComment(id, contentTextarea.value, (data) => {
       alert(data.msg);
       contentTextarea.value = "";
     });
@@ -79,6 +69,31 @@ function PostCommentWriteAndList({
           작성
         </button>
       </form>
+    </>
+  );
+}
+
+function PostCommentWriteAndList({
+  id,
+  postCommentsState,
+}: {
+  id: number;
+  // ReturnType<typeof 함수> : 그 함수가 리턴하는 값의 타입을 자동으로 뽑아냄
+  postCommentsState: ReturnType<typeof usePostComments>;
+}) {
+  const { postComments } = postCommentsState;
+
+  // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
+  // → JSX 안에 있던 긴 코드(confirm + 콜백)를 JSX 밖으로 빼냄
+  const deleteComment = (commentId: number) => {
+    if (!confirm(`${commentId}번 댓글을 정말로 삭제하시겠습니까?`)) return;
+
+    postCommentsState.deleteComment(id, commentId, (data) => alert(data.msg));
+  };
+
+  return (
+    <>
+      <PostCommentWrite id={id} postCommentsState={postCommentsState} />
 
       <h2>댓글 목록</h2>
 
