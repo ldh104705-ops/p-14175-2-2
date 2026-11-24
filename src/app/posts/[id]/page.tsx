@@ -79,6 +79,14 @@ function PostCommentListItem({
   comment: PostCommentDto;
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
+  // 수정모드 여부. 댓글마다 컴포넌트가 따로라서 각 댓글이 자기 상태를 따로 가짐
+  const [modifyMode, setModifyMode] = useState(false);
+
+  // true ↔ false 뒤집기
+  const toggleModifyMode = () => {
+    setModifyMode(!modifyMode);
+  };
+
   // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
   // → 이제 댓글 하나만 다루니까 commentId도 받을 필요 없음
   const deleteComment = () => {
@@ -89,9 +97,11 @@ function PostCommentListItem({
 
   return (
     <li className="flex gap-2 items-start">
-      <span>
-        {comment.id} : {comment.content}
-      </span>
+      <span>{comment.id} : </span>
+      {!modifyMode && <span>{comment.content}</span>}
+      <button className="px-1 rounded border" onClick={toggleModifyMode}>
+        {modifyMode ? "수정취소" : "수정"}
+      </button>
       <button className="px-1 rounded border" onClick={deleteComment}>
         삭제
       </button>
