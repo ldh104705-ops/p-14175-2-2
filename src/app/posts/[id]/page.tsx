@@ -73,12 +73,12 @@ function PostCommentWrite({
   );
 }
 
-function PostCommentWriteAndList({
+// 댓글 목록만 담당
+function PostCommentList({
   id,
   postCommentsState,
 }: {
   id: number;
-  // ReturnType<typeof 함수> : 그 함수가 리턴하는 값의 타입을 자동으로 뽑아냄
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
   const { postComments } = postCommentsState;
@@ -93,8 +93,6 @@ function PostCommentWriteAndList({
 
   return (
     <>
-      <PostCommentWrite id={id} postCommentsState={postCommentsState} />
-
       <h2>댓글 목록</h2>
 
       {postComments == null && <div>댓글 로딩중...</div>}
@@ -120,6 +118,24 @@ function PostCommentWriteAndList({
           ))}
         </ul>
       )}
+    </>
+  );
+}
+
+// 이제 작성 + 목록 컴포넌트를 '조립'만 함
+function PostCommentWriteAndList({
+  id,
+  postCommentsState,
+}: {
+  id: number;
+  // ReturnType<typeof 함수> : 그 함수가 리턴하는 값의 타입을 자동으로 뽑아냄
+  postCommentsState: ReturnType<typeof usePostComments>;
+}) {
+  return (
+    <>
+      <PostCommentWrite id={id} postCommentsState={postCommentsState} />
+
+      <PostCommentList id={id} postCommentsState={postCommentsState} />
     </>
   );
 }
