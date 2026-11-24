@@ -150,7 +150,7 @@ function PostInfo({
 }
 
 // 커스텀 훅: use로 시작하는 함수. 화면(JSX) 없이 '글 데이터 로직'만 담당
-function usePost(id: string) {
+function usePost(id: number) {
   const [post, setPost] = useState<PostDto | null>(null);
 
   useEffect(() => {
@@ -171,7 +171,7 @@ function usePost(id: string) {
 }
 
 // 댓글 데이터 로직(state + 조회/작성/삭제 API)만 담당하는 커스텀 훅
-function usePostComments(id: string) {
+function usePostComments(id: number) {
   const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
     null,
   );
@@ -230,7 +230,11 @@ function usePostComments(id: string) {
 }
 
 export default function Page() {
-  const { id } = useParams<{ id: string }>();
+  // path 파라미터는 항상 문자열("1")로만 가져올 수 있음 → 숫자로 변환해서 사용
+  // { id: idStr } : params.id 값을 idStr 이라는 이름의 변수에 담음 (구조분해할당 + 이름 변경)
+  const { id: idStr } = useParams<{ id: string }>();
+  const id = parseInt(idStr);
+
   const { post, deletePost } = usePost(id);
   const { postComments, deleteComment, writeComment } = usePostComments(id);
 
@@ -243,7 +247,7 @@ export default function Page() {
       <PostInfo post={post} deletePost={deletePost} />
 
       <PostCommentWriteAndList
-        id={post.id}
+        id={id}
         postComments={postComments}
         deleteComment={deleteComment}
         writeComment={writeComment}
