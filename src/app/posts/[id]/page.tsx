@@ -11,19 +11,8 @@ function PostCommentWriteAndList({
   postCommentsState,
 }: {
   id: number;
-  postCommentsState: {
-    postComments: PostCommentDto[] | null;
-    deleteComment: (
-      id: number,
-      commentId: number,
-      onSuccess: (data: { msg: string }) => void,
-    ) => void;
-    writeComment: (
-      id: number,
-      content: string,
-      onSuccess: (data: { msg: string }) => void,
-    ) => void;
-  };
+  // ReturnType<typeof 함수> : 그 함수가 리턴하는 값의 타입을 자동으로 뽑아냄
+  postCommentsState: ReturnType<typeof usePostComments>;
 }) {
   const { postComments, deleteComment, writeComment } = postCommentsState;
 
@@ -118,13 +107,7 @@ function PostCommentWriteAndList({
 function PostInfo({
   postState,
 }: {
-  postState: {
-    post: PostDto | null;
-    deletePost: (
-      id: number,
-      onSuccess: (data: { msg: string }) => void,
-    ) => void;
-  };
+  postState: ReturnType<typeof usePost>;
 }) {
   const router = useRouter();
   const { post, deletePost } = postState;
