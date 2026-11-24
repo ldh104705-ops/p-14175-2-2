@@ -77,7 +77,7 @@ function PostCommentList({
 }: {
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
-  const { id, postComments } = postCommentsState;
+  const { postId, postComments } = postCommentsState;
 
   // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
   // → JSX 안에 있던 긴 코드(confirm + 콜백)를 JSX 밖으로 빼냄
@@ -89,7 +89,7 @@ function PostCommentList({
 
   return (
     <>
-      <h2>{id}번 글의 댓글 목록</h2>
+      <h2>{postId}번 글의 댓글 목록</h2>
 
       {postComments == null && <div>댓글 로딩중...</div>}
 
@@ -195,21 +195,22 @@ function usePost(id: number) {
 }
 
 // 댓글 데이터 로직(state + 조회/작성/삭제 API)만 담당하는 커스텀 훅
-function usePostComments(id: number) {
+// 댓글 입장에서 그냥 id라고 하면 '댓글 id'인지 '글 id'인지 헷갈림 → postId로 명확하게
+function usePostComments(postId: number) {
   const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
     null,
   );
 
   useEffect(() => {
-    apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
-  }, [id]);
+    apiFetch(`/api/v1/posts/${postId}/comments`).then(setPostComments);
+  }, [postId]);
 
-  // 아래 두 함수도 id를 따로 받지 않음 → usePostComments(id)의 id를 기억 (클로저)
+  // 아래 두 함수도 postId를 따로 받지 않음 → usePostComments(postId)의 postId를 기억 (클로저)
   const deleteComment = (
     commentId: number,
     onSuccess: (data: { msg: string }) => void,
   ) => {
-    apiFetch(`/api/v1/posts/${id}/comments/${commentId}`, {
+    apiFetch(`/api/v1/posts/${postId}/comments/${commentId}`, {
       method: "DELETE",
     }).then((data) => {
       if (postComments != null) {
@@ -227,7 +228,7 @@ function usePostComments(id: number) {
     content: string,
     onSuccess: (data: { msg: string }) => void,
   ) => {
-    apiFetch(`/api/v1/posts/${id}/comments`, {
+    apiFetch(`/api/v1/posts/${postId}/comments`, {
       method: "POST",
       body: JSON.stringify({ content }),
     })
@@ -246,7 +247,7 @@ function usePostComments(id: number) {
   };
 
   return {
-    id, // 하위 컴포넌트에서 id가 필요하면 props 대신 여기서 꺼내 쓰면 됨
+    postId, // 하위 컴포넌트에서 글 id가 필요하면 props 대신 여기서 꺼내 쓰면 됨
     postComments,
     deleteComment,
     writeComment,
