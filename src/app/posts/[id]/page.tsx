@@ -115,6 +115,7 @@ function PostCommentListItem({
 
     postCommentsState.modifyComment(comment.id, contentInput.value, (data) => {
       alert(data.msg);
+      setModifyMode(false); // 수정 완료 → 다시 일반 모드로
     });
   };
 
@@ -327,7 +328,18 @@ function usePostComments(postId: number) {
       method: "PUT",
       body: JSON.stringify({ content }),
     })
-      .then(onSuccess)
+      .then((data) => {
+        if (postComments != null) {
+          // 수정된 댓글만 내용을 바꾼 새 객체로, 나머지는 그대로 → 새 배열로 state 교체
+          setPostComments(
+            postComments.map((comment) =>
+              comment.id == commentId ? { ...comment, content } : comment,
+            ),
+          );
+        }
+
+        onSuccess(data);
+      })
       .catch((rsData) => {
         alert(`${rsData.resultCode} : ${rsData.msg}`);
       });
