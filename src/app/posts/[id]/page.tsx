@@ -88,8 +88,34 @@ function PostCommentListItem({
   };
 
   const handleModifyFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    // 일단 전송(페이지 새로고침)만 막아둠, 실제 수정은 다음 단계에서
     e.preventDefault();
+
+    const form = e.target as HTMLFormElement;
+    const contentInput = form.elements.namedItem("content") as HTMLInputElement;
+
+    contentInput.value = contentInput.value.trim();
+
+    if (contentInput.value.length == 0) {
+      alert("댓글 내용을 입력해주세요.");
+      contentInput.focus();
+      return;
+    }
+
+    if (contentInput.value.length < 2) {
+      alert("댓글 내용을 2자 이상 입력해주세요.");
+      contentInput.focus();
+      return;
+    }
+
+    if (contentInput.value.length > 100) {
+      alert("댓글 내용은 100자 이하로 입력해주세요.");
+      contentInput.focus();
+      return;
+    }
+
+    postCommentsState.modifyComment(comment.id, contentInput.value, (data) => {
+      alert(data.msg);
+    });
   };
 
   // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
@@ -292,11 +318,27 @@ function usePostComments(postId: number) {
       });
   };
 
+  const modifyComment = (
+    commentId: number,
+    content: string,
+    onSuccess: (data: { msg: string }) => void,
+  ) => {
+    apiFetch(`/api/v1/posts/${postId}/comments/${commentId}`, {
+      method: "PUT",
+      body: JSON.stringify({ content }),
+    })
+      .then(onSuccess)
+      .catch((rsData) => {
+        alert(`${rsData.resultCode} : ${rsData.msg}`);
+      });
+  };
+
   return {
     postId, // 하위 컴포넌트에서 글 id가 필요하면 props 대신 여기서 꺼내 쓰면 됨
     postComments,
     deleteComment,
     writeComment,
+    modifyComment,
   };
 }
 
