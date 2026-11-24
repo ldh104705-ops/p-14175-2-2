@@ -38,6 +38,12 @@ export default function Page() {
       return;
     }
 
+    if (titleInput.value.length > 100) {
+      alert("제목은 100자 이하로 입력해주세요.");
+      titleInput.focus();
+      return;
+    }
+
     contentTextarea.value = contentTextarea.value.trim();
 
     if (contentTextarea.value.length == 0) {
@@ -48,6 +54,12 @@ export default function Page() {
 
     if (contentTextarea.value.length < 2) {
       alert("내용을 2자 이상 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+
+    if (contentTextarea.value.length > 5000) {
+      alert("내용은 5000자 이하로 입력해주세요.");
       contentTextarea.focus();
       return;
     }

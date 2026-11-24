@@ -81,6 +81,12 @@ export default function Page() {
       return;
     }
 
+    if (contentTextarea.value.length > 100) {
+      alert("댓글 내용은 100자 이하로 입력해주세요.");
+      contentTextarea.focus();
+      return;
+    }
+
     writeComment(post!.id, contentTextarea.value);
     contentTextarea.value = "";
   };
