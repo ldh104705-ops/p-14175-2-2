@@ -8,23 +8,25 @@ import { useEffect, useState } from "react";
 
 function PostCommentWriteAndList({
   id,
-  postComments,
-  deleteComment,
-  writeComment,
+  postCommentsState,
 }: {
   id: number;
-  postComments: PostCommentDto[] | null;
-  deleteComment: (
-    id: number,
-    commentId: number,
-    onSuccess: (data: { msg: string }) => void,
-  ) => void;
-  writeComment: (
-    id: number,
-    content: string,
-    onSuccess: (data: { msg: string }) => void,
-  ) => void;
+  postCommentsState: {
+    postComments: PostCommentDto[] | null;
+    deleteComment: (
+      id: number,
+      commentId: number,
+      onSuccess: (data: { msg: string }) => void,
+    ) => void;
+    writeComment: (
+      id: number,
+      content: string,
+      onSuccess: (data: { msg: string }) => void,
+    ) => void;
+  };
 }) {
+  const { postComments, deleteComment, writeComment } = postCommentsState;
+
   const handleCommentWriteFormSubmit = (
     e: React.FormEvent<HTMLFormElement>,
   ) => {
@@ -114,13 +116,20 @@ function PostCommentWriteAndList({
 }
 
 function PostInfo({
-  post,
-  deletePost,
+  postState,
 }: {
-  post: PostDto;
-  deletePost: (id: number, onSuccess: (data: { msg: string }) => void) => void;
+  postState: {
+    post: PostDto | null;
+    deletePost: (
+      id: number,
+      onSuccess: (data: { msg: string }) => void,
+    ) => void;
+  };
 }) {
   const router = useRouter();
+  const { post, deletePost } = postState;
+
+  if (post == null) return <div>로딩중...</div>;
 
   return (
     <>
@@ -235,23 +244,17 @@ export default function Page() {
   const { id: idStr } = useParams<{ id: string }>();
   const id = parseInt(idStr);
 
-  const { post, deletePost } = usePost(id);
-  const { postComments, deleteComment, writeComment } = usePostComments(id);
-
-  if (post == null) return <div>로딩중...</div>;
+  // 훅의 결과를 쪼개지(구조분해) 않고 통째로 받아서 하위 컴포넌트에 그대로 넘김
+  const postState = usePost(id);
+  const postCommentsState = usePostComments(id);
 
   return (
     <>
       <h1>글 상세페이지</h1>
 
-      <PostInfo post={post} deletePost={deletePost} />
+      <PostInfo postState={postState} />
 
-      <PostCommentWriteAndList
-        id={id}
-        postComments={postComments}
-        deleteComment={deleteComment}
-        writeComment={writeComment}
-      />
+      <PostCommentWriteAndList id={id} postCommentsState={postCommentsState} />
     </>
   );
 }
