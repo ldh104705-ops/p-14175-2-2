@@ -44,7 +44,7 @@ function PostCommentWrite({
       return;
     }
 
-    postCommentsState.writeComment(id, contentTextarea.value, (data) => {
+    postCommentsState.writeComment(contentTextarea.value, (data) => {
       alert(data.msg);
       contentTextarea.value = "";
     });
@@ -88,7 +88,7 @@ function PostCommentList({
   const deleteComment = (commentId: number) => {
     if (!confirm(`${commentId}번 댓글을 정말로 삭제하시겠습니까?`)) return;
 
-    postCommentsState.deleteComment(id, commentId, (data) => alert(data.msg));
+    postCommentsState.deleteComment(commentId, (data) => alert(data.msg));
   };
 
   return (
@@ -154,7 +154,7 @@ function PostInfo({
   const deletePost = () => {
     if (!confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`)) return;
 
-    postState.deletePost(post.id, (data) => {
+    postState.deletePost((data) => {
       alert(data.msg);
       router.replace("/posts");
     });
@@ -187,7 +187,8 @@ function usePost(id: number) {
   }, [id]);
 
   // 데이터 로직(API 호출)만 하고, 성공 후 화면 처리(alert, 이동)는 onSuccess로 호출한 쪽에 맡김
-  const deletePost = (id: number, onSuccess: (data: { msg: string }) => void) => {
+  // id를 매개변수로 받지 않아도 됨 → usePost(id)의 id를 기억하고 있음 (클로저)
+  const deletePost = (onSuccess: (data: { msg: string }) => void) => {
     apiFetch(`/api/v1/posts/${id}`, {
       method: "DELETE",
     }).then(onSuccess);
@@ -209,8 +210,8 @@ function usePostComments(id: number) {
     apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
   }, [id]);
 
+  // 아래 두 함수도 id를 따로 받지 않음 → usePostComments(id)의 id를 기억 (클로저)
   const deleteComment = (
-    id: number,
     commentId: number,
     onSuccess: (data: { msg: string }) => void,
   ) => {
@@ -229,7 +230,6 @@ function usePostComments(id: number) {
   };
 
   const writeComment = (
-    id: number,
     content: string,
     onSuccess: (data: { msg: string }) => void,
   ) => {
