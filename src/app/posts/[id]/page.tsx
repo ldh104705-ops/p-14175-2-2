@@ -8,10 +8,8 @@ import { useEffect, useState } from "react";
 
 // 댓글 작성 폼만 담당
 function PostCommentWrite({
-  id,
   postCommentsState,
 }: {
-  id: number;
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
   const handleCommentWriteFormSubmit = (
@@ -75,13 +73,11 @@ function PostCommentWrite({
 
 // 댓글 목록만 담당
 function PostCommentList({
-  id,
   postCommentsState,
 }: {
-  id: number;
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
-  const { postComments } = postCommentsState;
+  const { id, postComments } = postCommentsState;
 
   // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
   // → JSX 안에 있던 긴 코드(confirm + 콜백)를 JSX 밖으로 빼냄
@@ -93,7 +89,7 @@ function PostCommentList({
 
   return (
     <>
-      <h2>댓글 목록</h2>
+      <h2>{id}번 글의 댓글 목록</h2>
 
       {postComments == null && <div>댓글 로딩중...</div>}
 
@@ -124,18 +120,16 @@ function PostCommentList({
 
 // 이제 작성 + 목록 컴포넌트를 '조립'만 함
 function PostCommentWriteAndList({
-  id,
   postCommentsState,
 }: {
-  id: number;
   // ReturnType<typeof 함수> : 그 함수가 리턴하는 값의 타입을 자동으로 뽑아냄
   postCommentsState: ReturnType<typeof usePostComments>;
 }) {
   return (
     <>
-      <PostCommentWrite id={id} postCommentsState={postCommentsState} />
+      <PostCommentWrite postCommentsState={postCommentsState} />
 
-      <PostCommentList id={id} postCommentsState={postCommentsState} />
+      <PostCommentList postCommentsState={postCommentsState} />
     </>
   );
 }
@@ -252,6 +246,7 @@ function usePostComments(id: number) {
   };
 
   return {
+    id, // 하위 컴포넌트에서 id가 필요하면 props 대신 여기서 꺼내 쓰면 됨
     postComments,
     deleteComment,
     writeComment,
@@ -274,7 +269,7 @@ export default function Page() {
 
       <PostInfo postState={postState} />
 
-      <PostCommentWriteAndList id={id} postCommentsState={postCommentsState} />
+      <PostCommentWriteAndList postCommentsState={postCommentsState} />
     </>
   );
 }
