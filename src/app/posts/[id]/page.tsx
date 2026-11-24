@@ -135,17 +135,14 @@ function PostCommentWriteAndList({
   );
 }
 
-function PostInfo({ post }: { post: PostDto }) {
+function PostInfo({
+  post,
+  deletePost,
+}: {
+  post: PostDto;
+  deletePost: (id: number, onSuccess: (data: { msg: string }) => void) => void;
+}) {
   const router = useRouter();
-
-  const deletePost = (id: number) => {
-    apiFetch(`/api/v1/posts/${id}`, {
-      method: "DELETE",
-    }).then((data) => {
-      alert(data.msg);
-      router.replace("/posts");
-    });
-  };
 
   return (
     <>
@@ -156,7 +153,13 @@ function PostInfo({ post }: { post: PostDto }) {
       <div className="flex gap-2">
         <button
           className="p-2 rounded border"
-          onClick={() => confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`) && deletePost(post.id)}
+          onClick={() =>
+            confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`) &&
+            deletePost(post.id, (data) => {
+              alert(data.msg);
+              router.replace("/posts");
+            })
+          }
         >
           삭제
         </button>
@@ -176,14 +179,22 @@ function usePost(id: string) {
     apiFetch(`/api/v1/posts/${id}`).then(setPost);
   }, [id]);
 
+  // 데이터 로직(API 호출)만 하고, 성공 후 화면 처리(alert, 이동)는 onSuccess로 호출한 쪽에 맡김
+  const deletePost = (id: number, onSuccess: (data: { msg: string }) => void) => {
+    apiFetch(`/api/v1/posts/${id}`, {
+      method: "DELETE",
+    }).then(onSuccess);
+  };
+
   return {
     post,
+    deletePost,
   };
 }
 
 export default function Page() {
   const { id } = useParams<{ id: string }>();
-  const { post } = usePost(id);
+  const { post, deletePost } = usePost(id);
   const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
     null,
   );
@@ -198,7 +209,7 @@ export default function Page() {
     <>
       <h1>글 상세페이지</h1>
 
-      <PostInfo post={post} />
+      <PostInfo post={post} deletePost={deletePost} />
 
       <PostCommentWriteAndList
         id={post.id}
