@@ -91,7 +91,9 @@ function PostCommentListItem({
     e.preventDefault();
 
     const form = e.target as HTMLFormElement;
-    const contentInput = form.elements.namedItem("content") as HTMLInputElement;
+    const contentInput = form.elements.namedItem(
+      "content",
+    ) as HTMLTextAreaElement;
 
     contentInput.value = contentInput.value.trim();
 
@@ -130,15 +132,19 @@ function PostCommentListItem({
   return (
     <li className="flex gap-2 items-start">
       <span>{comment.id} : </span>
-      {!modifyMode && <span>{comment.content}</span>}
+      {/* whiteSpace: pre-line → 댓글 속 줄바꿈(\n)을 화면에서도 줄바꿈으로 */}
+      {!modifyMode && (
+        <span style={{ whiteSpace: "pre-line" }}>{comment.content}</span>
+      )}
       {modifyMode && (
-        <form className="flex gap-2" onSubmit={handleModifyFormSubmit}>
-          <input
+        <form className="flex gap-2 items-start" onSubmit={handleModifyFormSubmit}>
+          {/* 여러 줄 입력이 가능하도록 input → textarea */}
+          <textarea
             className="border p-1 rounded"
-            type="text"
             name="content"
             placeholder="댓글 내용"
             maxLength={100}
+            rows={3}
             defaultValue={comment.content}
             autoFocus
           />
@@ -147,12 +153,15 @@ function PostCommentListItem({
           </button>
         </form>
       )}
-      <button className="px-1 rounded border" onClick={toggleModifyMode}>
-        {modifyMode ? "수정취소" : "수정"}
-      </button>
-      <button className="px-1 rounded border" onClick={deleteComment}>
-        삭제
-      </button>
+      {/* 내용이 여러 줄이어도 버튼은 위쪽에 정렬 (li의 items-start) */}
+      <div className="flex gap-2">
+        <button className="px-1 rounded border" onClick={toggleModifyMode}>
+          {modifyMode ? "수정취소" : "수정"}
+        </button>
+        <button className="px-1 rounded border" onClick={deleteComment}>
+          삭제
+        </button>
+      </div>
     </li>
   );
 }
