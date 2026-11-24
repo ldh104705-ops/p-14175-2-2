@@ -10,12 +10,15 @@ export const apiFetch = (url: string, options?: RequestInit) => {
   }
 
   return fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`, options).then(
-    (res) => {
-      // res.ok: 응답코드가 200~299 이면 true
-      // 4xx, 5xx 이면 직접 예외를 던짐 → 아래 then은 모두 건너뛰고 바로 catch로 이동
-      if (!res.ok) throw new Error(`HTTP 에러 : ${res.status}`);
+    async (res) => {
+      // 에러 응답도 백엔드가 RsData { resultCode, msg } JSON으로 줌 → 먼저 꺼냄
+      const rsData = await res.json();
 
-      return res.json();
+      // res.ok: 응답코드가 200~299 이면 true
+      // 4xx, 5xx 이면 응답객체(rsData)를 그대로 던짐 → catch에서 rsData.msg 사용 가능
+      if (!res.ok) throw rsData;
+
+      return rsData;
     },
   );
 };

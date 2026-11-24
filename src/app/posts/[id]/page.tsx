@@ -55,10 +55,9 @@ export default function Page() {
       // 응답으로 받은 새 댓글(data.data)을 맨 앞에 붙인 새 배열로 교체
       setPostComments([data.data, ...postComments]);
     })
-    // 주의: fetch는 4xx, 5xx 응답이어도 '통신 자체는 성공'으로 봐서 catch로 오지 않음
-    // catch는 서버가 꺼져 있는 등 네트워크 실패일 때만 실행됨
-    .catch((error) => {
-      alert(error);
+    // apiFetch가 4xx, 5xx 응답이면 rsData를 던짐 → 여기서 받아서 메시지 출력
+    .catch((rsData) => {
+      alert(`${rsData.resultCode} : ${rsData.msg}`);
     });
   };
 
