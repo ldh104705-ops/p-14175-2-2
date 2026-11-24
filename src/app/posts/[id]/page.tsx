@@ -168,15 +168,27 @@ function PostInfo({ post }: { post: PostDto }) {
   );
 }
 
+// 커스텀 훅: use로 시작하는 함수. 화면(JSX) 없이 '글 데이터 로직'만 담당
+function usePost(id: string) {
+  const [post, setPost] = useState<PostDto | null>(null);
+
+  useEffect(() => {
+    apiFetch(`/api/v1/posts/${id}`).then(setPost);
+  }, [id]);
+
+  return {
+    post,
+  };
+}
+
 export default function Page() {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<PostDto | null>(null);
+  const { post } = usePost(id);
   const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
     null,
   );
 
   useEffect(() => {
-    apiFetch(`/api/v1/posts/${id}`).then(setPost);
     apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
   }, [id]);
 
