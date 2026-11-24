@@ -6,28 +6,15 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function Page() {
-  const router = useRouter();
-  const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<PostDto | null>(null);
-  const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
-    null,
-  );
-
-  useEffect(() => {
-    apiFetch(`/api/v1/posts/${id}`).then(setPost);
-    apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
-  }, [id]);
-
-  const deletePost = (id: number) => {
-    apiFetch(`/api/v1/posts/${id}`, {
-      method: "DELETE",
-    }).then((data) => {
-      alert(data.msg);
-      router.replace("/posts");
-    });
-  };
-
+function PostCommentWriteAndList({
+  id,
+  postComments,
+  setPostComments,
+}: {
+  id: number;
+  postComments: PostCommentDto[] | null;
+  setPostComments: (postComments: PostCommentDto[]) => void;
+}) {
   const deleteComment = (id: number, commentId: number) => {
     apiFetch(`/api/v1/posts/${id}/comments/${commentId}`, {
       method: "DELETE",
@@ -47,18 +34,19 @@ export default function Page() {
     apiFetch(`/api/v1/posts/${id}/comments`, {
       method: "POST",
       body: JSON.stringify({ content }),
-    }).then((data) => {
-      alert(data.msg);
-
-      if (postComments == null) return;
-
-      // 응답으로 받은 새 댓글(data.data)을 맨 앞에 붙인 새 배열로 교체
-      setPostComments([data.data, ...postComments]);
     })
-    // apiFetch가 4xx, 5xx 응답이면 rsData를 던짐 → 여기서 받아서 메시지 출력
-    .catch((rsData) => {
-      alert(`${rsData.resultCode} : ${rsData.msg}`);
-    });
+      .then((data) => {
+        alert(data.msg);
+
+        if (postComments == null) return;
+
+        // 응답으로 받은 새 댓글(data.data)을 맨 앞에 붙인 새 배열로 교체
+        setPostComments([data.data, ...postComments]);
+      })
+      // apiFetch가 4xx, 5xx 응답이면 rsData를 던짐 → 여기서 받아서 메시지 출력
+      .catch((rsData) => {
+        alert(`${rsData.resultCode} : ${rsData.msg}`);
+      });
   };
 
   const handleCommentWriteFormSubmit = (
@@ -91,32 +79,12 @@ export default function Page() {
       return;
     }
 
-    writeComment(post!.id, contentTextarea.value);
+    writeComment(id, contentTextarea.value);
     contentTextarea.value = "";
   };
 
-  if (post == null) return <div>로딩중...</div>;
-
   return (
     <>
-      <h1>글 상세페이지</h1>
-
-      <div>번호 : {post.id}</div>
-      <div>제목 : {post.title}</div>
-      <div style={{ whiteSpace: "pre-line" }}>{post.content}</div>
-
-      <div className="flex gap-2">
-        <button
-          className="p-2 rounded border"
-          onClick={() => confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`) && deletePost(post.id)}
-        >
-          삭제
-        </button>
-        <Link className="p-2 rounded border" href={`/posts/${post.id}/edit`}>
-          수정
-        </Link>
-      </div>
-
       <h2>댓글 작성</h2>
 
       <form
@@ -154,7 +122,7 @@ export default function Page() {
                 className="px-1 rounded border"
                 onClick={() =>
                   confirm(`${comment.id}번 댓글을 정말로 삭제하시겠습니까?`) &&
-                  deleteComment(post.id, comment.id)
+                  deleteComment(id, comment.id)
                 }
               >
                 삭제
@@ -163,6 +131,59 @@ export default function Page() {
           ))}
         </ul>
       )}
+    </>
+  );
+}
+
+export default function Page() {
+  const router = useRouter();
+  const { id } = useParams<{ id: string }>();
+  const [post, setPost] = useState<PostDto | null>(null);
+  const [postComments, setPostComments] = useState<PostCommentDto[] | null>(
+    null,
+  );
+
+  useEffect(() => {
+    apiFetch(`/api/v1/posts/${id}`).then(setPost);
+    apiFetch(`/api/v1/posts/${id}/comments`).then(setPostComments);
+  }, [id]);
+
+  const deletePost = (id: number) => {
+    apiFetch(`/api/v1/posts/${id}`, {
+      method: "DELETE",
+    }).then((data) => {
+      alert(data.msg);
+      router.replace("/posts");
+    });
+  };
+
+  if (post == null) return <div>로딩중...</div>;
+
+  return (
+    <>
+      <h1>글 상세페이지</h1>
+
+      <div>번호 : {post.id}</div>
+      <div>제목 : {post.title}</div>
+      <div style={{ whiteSpace: "pre-line" }}>{post.content}</div>
+
+      <div className="flex gap-2">
+        <button
+          className="p-2 rounded border"
+          onClick={() => confirm(`${post.id}번 글을 정말로 삭제하시겠습니까?`) && deletePost(post.id)}
+        >
+          삭제
+        </button>
+        <Link className="p-2 rounded border" href={`/posts/${post.id}/edit`}>
+          수정
+        </Link>
+      </div>
+
+      <PostCommentWriteAndList
+        id={post.id}
+        postComments={postComments}
+        setPostComments={setPostComments}
+      />
     </>
   );
 }
