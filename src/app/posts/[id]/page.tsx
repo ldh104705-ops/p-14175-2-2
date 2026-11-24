@@ -87,6 +87,11 @@ function PostCommentListItem({
     setModifyMode(!modifyMode);
   };
 
+  const handleModifyFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    // 일단 전송(페이지 새로고침)만 막아둠, 실제 수정은 다음 단계에서
+    e.preventDefault();
+  };
+
   // 훅의 deleteComment를 이 컴포넌트에 맞게 '재정의'
   // → 이제 댓글 하나만 다루니까 commentId도 받을 필요 없음
   const deleteComment = () => {
@@ -99,6 +104,22 @@ function PostCommentListItem({
     <li className="flex gap-2 items-start">
       <span>{comment.id} : </span>
       {!modifyMode && <span>{comment.content}</span>}
+      {modifyMode && (
+        <form className="flex gap-2" onSubmit={handleModifyFormSubmit}>
+          <input
+            className="border p-1 rounded"
+            type="text"
+            name="content"
+            placeholder="댓글 내용"
+            maxLength={100}
+            defaultValue={comment.content}
+            autoFocus
+          />
+          <button className="px-1 rounded border" type="submit">
+            저장
+          </button>
+        </form>
+      )}
       <button className="px-1 rounded border" onClick={toggleModifyMode}>
         {modifyMode ? "수정취소" : "수정"}
       </button>
